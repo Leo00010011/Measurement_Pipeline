@@ -1,0 +1,82 @@
+import json
+from reconstruction.utility.file import extract_rgbd_frames
+import os
+
+
+def set_default_value(config, key, value):
+    if key not in config:
+        config[key] = value
+
+
+def initialize_config(config):
+
+    # set default parameters if not specified
+    set_default_value(config, "depth_map_type", "redwood")
+    set_default_value(config, "n_frames_per_fragment", 20)
+    set_default_value(config, "n_keyframes_per_n_frame", 5)
+    set_default_value(config, "min_depth", 0.3)
+    set_default_value(config, "max_depth", 0.85)
+    set_default_value(config, "voxel_size", 0.01)
+    set_default_value(config, "max_depth_diff", 0.03)
+    set_default_value(config, "depth_scale", 1000)
+    set_default_value(config, "preference_loop_closure_odometry", 0.1)
+    set_default_value(config, "preference_loop_closure_registration", 5.0)
+    set_default_value(config, "tsdf_cubic_size", 0.5)
+    set_default_value(config, "icp_method", "color")
+    set_default_value(config, "global_registration", "fgr")
+    set_default_value(config, "python_multi_threading", False)  # FIXME
+
+    # `slac` and `slac_integrate` related parameters.
+    # `voxel_size` and `min_depth` paramters from previous section,
+    # are also used in `slac` and `slac_integrate`.
+    set_default_value(config, "max_iterations", 5)
+    set_default_value(config, "sdf_trunc", 0.04)
+    set_default_value(config, "block_count", 40000)
+    set_default_value(config, "distance_threshold", 0.07)
+    set_default_value(config, "fitness_threshold", 0.3)
+    set_default_value(config, "regularizer_weight", 1)
+    set_default_value(config, "method", "slac")
+    set_default_value(config, "device", "CPU:0")
+    set_default_value(config, "save_output_as", "pointcloud")
+    set_default_value(config, "folder_slac", "slac")
+    set_default_value(config, "template_optimized_posegraph_slac",
+                      "optimized_posegraph_slac.json")
+
+    # path related parameters.
+    set_default_value(config, "folder_fragment", "fragments")
+    set_default_value(config, "subfolder_slac",
+                      os.path.join("slac","%0.3f"% config["voxel_size"]))
+    set_default_value(config, "template_fragment_posegraph",
+                      os.path.join("fragments","fragment_%03d.json"))
+    set_default_value(config, "template_fragment_posegraph_optimized",
+                      os.path.join("fragments","fragment_optimized_%03d.json"))
+    set_default_value(config, "template_fragment_pointcloud",
+                      os.path.join("fragments","fragment_%03d.ply"))
+    set_default_value(config, "folder_scene", "scene")
+    set_default_value(config, "template_global_posegraph",
+                      os.path.join("scene","global_registration.json"))
+    set_default_value(config, "template_global_posegraph_optimized",
+                      os.path.join("scene","global_registration_optimized.json"))
+    set_default_value(config, "template_refined_posegraph",
+                      os.path.join("scene","refined_registration.json"))
+    set_default_value(config, "template_refined_posegraph_optimized",
+                      os.path.join("scene","refined_registration_optimized.json"))
+    set_default_value(config, "template_global_mesh", os.path.join("scene","integrated.ply"))
+    set_default_value(config, "template_global_traj", os.path.join("scene","trajectory.log"))
+
+    config["path_dataset"] = "output\\reconstruction\\"
+
+    # config["path_dataset"], config["path_intrinsic"], config[
+    #     "depth_scale"] = extract_rgbd_frames(config["path_dataset"])
+
+
+def initialize_config_2(config):
+    initialize_config(config)
+    config['path_dataset'] = "output"
+    config['path_intrinsic'] = 'output\\intrinsic.json'
+    with open(config['path_intrinsic']) as intr_file:
+        intr = json.load(intr_file)
+    config['depth_scale'] = intr["depth_scale"]
+    config["n_frames_per_fragment"] = 20
+    config["n_keyframes_per_n_frame"] = 5
+    config['frame_step'] = 1
